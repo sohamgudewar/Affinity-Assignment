@@ -124,3 +124,20 @@ The program defaults to **JSON** format for key data engineering considerations:
   ]
 }
 ```
+
+
+# Output
+<!-- PS C:\Users\soham\Desktop\Affinity Assignment> python question1_python/scraper.py --search "external harddrive" --format table --limit 3
+
+[*] Querying MD Computers for: 'external harddrive'
+[*] Request URL: https://mdcomputers.in/?route=product%2Fsearch&search=external+harddrive
+[*] Successfully extracted 3 product(s).
+╒═════╤═══════════════════════════════════════════╤═════════╤════════════════╤═══════════════════════════════════════════════════════════════════════════════════════╕
+│   # │ Product Name                              │ Price   │ Availability   │ URL                                                                                   │
+╞═════╪═══════════════════════════════════════════╪═════════╪════════════════╪═══════════════════════════════════════════════════════════════════════════════════════╡
+│   1 │ EK-Loop Connect - External USB Cable (1M) │ ₹550    │ In Stock       │ https://mdcomputers.in/product/ek-loop-connect-external-usb-cable                     │
+├─────┼───────────────────────────────────────────┼─────────┼────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│   2 │ Seagate Expansion 1TB External Hard Drive │ ₹9,699  │ In Stock       │ https://mdcomputers.in/product/seagate-expansion-1tb-external-hard-drive-stkm1000400  │
+├─────┼───────────────────────────────────────────┼─────────┼────────────────┼───────────────────────────────────────────────────────────────────────────────────────┤
+│   3 │ WD Elements 1TB External Hard Drive       │ ₹9,760  │ In Stock       │ https://mdcomputers.in/product/wd-elements-1tb-external-hard-drive-wdbhhg0010bbk-eesn │
+╘═════╧═══════════════════════════════════════════╧═════════╧════════════════╧═══════════════════════════════════════════════════════════════════════════════════════╛ -->

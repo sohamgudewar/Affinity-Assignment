@@ -139,3 +139,46 @@ python verify_queries.py -q 2
 # Run Question 3 & 4 (heavy join pagination)
 python verify_queries.py -q 3
 ```
+
+<!-- 
+Tested Output
+PS C:\Users\soham\Desktop\Affinity Assignment\question2_sql> python verify_queries.py
+[*] Connecting to public Rfam database (mysql-rfam-public.ebi.ac.uk:4497)...
+[+] Successfully connected to Rfam MySQL!
+
+================================================================================
+ QUESTION 2.1: How many types of Acacia plants can be found in the taxonomy table?
+================================================================================
+
+[Query 1A: Strict Botanical Genus (species LIKE 'Acacia%')]
+╒═══════════════════════╕
+│   count_species_genus │
+╞═══════════════════════╡
+│                   326 │
+╘═══════════════════════╛
+Elapsed: 0.21s | Result: 326 Acacia species
+
+[Query 1B: Broader Taxonomic Lineage (tax_string LIKE '%Acacia%')]
+╒═════════════════════╕
+│   count_tax_lineage │
+╞═════════════════════╡
+│                 357 │
+╘═════════════════════╛
+Elapsed: 0.80s | Result: 357 taxonomic entries containing 'Acacia'
+
+================================================================================
+ QUESTION 2.2: Which type of wheat has the longest DNA sequence?
+================================================================================
+╒══════════════════════════════╤════════════════╤══════════════════════╤═══════════════════════════════════════════════════════════════════════════╕
+│ wheat_type                   │ accession_id   │   sequence_length_bp │ sequence_description                                                      │
+╞══════════════════════════════╪════════════════╪══════════════════════╪═══════════════════════════════════════════════════════════════════════════╡
+│ Triticum durum (durum wheat) │ LT934116.1     │            836514780 │ LT934116.1 Triticum turgidum subsp. durum genome assembly, chromosome: 3B │
+╘══════════════════════════════╧════════════════╧══════════════════════╧═══════════════════════════════════════════════════════════════════════════╛
+Elapsed: 6.15s
+Answer: 'Triticum durum (durum wheat)' has the longest DNA sequence (836,514,780 bp).        
+Accession: LT934116.1
+Description: LT934116.1 Triticum turgidum subsp. durum genome assembly, chromosome: 3B       
+
+[i] Tip: Use '--question 3' or '--all' to also execute the heavy family pagination query.    
+
+[+] Database connection closed. -->
