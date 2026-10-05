@@ -1,0 +1,14 @@
+# ==============================================================================
+# File: requirements.txt
+# Purpose: Top-level Python dependencies for the Affinity Answers Data Engineer
+#          assessment (MD Computers web scraper and Rfam MySQL verification runner).
+# ==============================================================================
+
+# Question 1: Python Web Scraper
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+tabulate>=0.9.0
+
+# Question 2: Rfam Database Verification Runner
+pymysql>=1.1.0
+cryptography>=41.0.0

@@ -1,0 +1,38 @@
+# ==============================================================================
+# File: .gitignore
+# Purpose: Specifies intentionally untracked files and directories to ignore in
+#          the Affinity Assignment repository (Python, OS artifacts, and caches).
+# ==============================================================================
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment and sensitive files
+.env
+.env.local
+
+# IDE and OS metadata
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Output scratch files and logs
+*.log
+results/
+temp/
