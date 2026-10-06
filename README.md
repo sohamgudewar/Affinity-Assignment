@@ -130,36 +130,6 @@ pip install -r requirements.txt
   - **Composite Year Handling:** Isolates primary 4-digit years from composite entries (e.g., `2013 (1888)`) for accurate numerical sorting.
   - **Automatic Cleanup:** Configures `trap` handlers to remove temporary files upon process exit.
 
----
-
-## 🎥 Screen Recording Walkthrough Guide
-
-The submission requires a screen recording demonstrating the execution of each program. Here is the suggested 2-minute demonstration flow:
-
-### Step 1: Demonstrate Question 1 (Python Scraper)
-```bash
-# 1. Run interactive prompt
-python question1_python/scraper.py
-# (Enter: external harddrive)
-
-# 2. Run with table format and limit
-python question1_python/scraper.py --search "external harddrive" --format table --limit 3
-
-# 3. Export to JSON
-python question1_python/scraper.py --search "external harddrive" --format json --output question1_python/sample_output.json --limit 3
-```
-
-### Step 2: Demonstrate Question 2 (SQL Queries against live Rfam)
-```bash
-# Execute live query runner against EMBL-EBI Rfam server
-python question2_sql/verify_queries.py
-```
-
-### Step 3: Demonstrate Question 3 (Unix Shell Script)
-```bash
-# Run shell script with remote S&P 500 CSV URL
-./question3_shell/process_companies.sh "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/refs/heads/main/data/constituents.csv" | head -n 25
-```
 
 ---
 
