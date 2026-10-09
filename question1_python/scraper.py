@@ -296,6 +296,40 @@ def format_as_csv(products: List[Dict[str, Any]]) -> str:
     return output.getvalue()
 
 
+def format_multi_csv(results: Dict[str, List[Dict[str, Any]]]) -> str:
+    """Format multiple product searches into a single CSV string.
+
+    Args:
+        results: Dictionary mapping each search term to its list of product records.
+
+    Returns:
+        CSV formatted string including a 'search_term' column.
+    """
+    import io
+
+    output = io.StringIO()
+    fieldnames = [
+        "search_term",
+        "title",
+        "current_price",
+        "numeric_price",
+        "original_price",
+        "discount",
+        "availability",
+        "product_url",
+    ]
+    writer = csv.DictWriter(
+        output, fieldnames=fieldnames, extrasaction="ignore", quoting=csv.QUOTE_MINIMAL
+    )
+    writer.writeheader()
+    for term, products in results.items():
+        for p in products:
+            row = dict(p)
+            row["search_term"] = term
+            writer.writerow(row)
+    return output.getvalue()
+
+
 def run_scraper(
     search_term: str,
     output_format: str = "json",
@@ -303,7 +337,7 @@ def run_scraper(
     limit: Optional[int] = None,
     timeout: int = 15,
 ) -> List[Dict[str, Any]]:
-    """Execute the scraping workflow and handle rendering.
+    """Execute the scraping workflow for a single search term.
 
     Args:
         search_term: Search query string.
@@ -362,6 +396,126 @@ def run_scraper(
     return products
 
 
+def run_multi_scraper(
+    search_terms: List[str],
+    output_format: str = "json",
+    output_file: Optional[str] = None,
+    limit: Optional[int] = None,
+    timeout: int = 15,
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Execute scraping across multiple search terms.
+
+    Args:
+        search_terms: List of query strings.
+        output_format: 'json', 'csv', or 'table'.
+        output_file: Optional path to save output file.
+        limit: Optional maximum number of items per query.
+        timeout: Network timeout in seconds.
+
+    Returns:
+        Dictionary mapping each search term to its list of extracted products.
+    """
+    if len(search_terms) == 1:
+        single_products = run_scraper(
+            search_term=search_terms[0],
+            output_format=output_format,
+            output_file=output_file,
+            limit=limit,
+            timeout=timeout,
+        )
+        return {search_terms[0]: single_products}
+
+    all_results: Dict[str, List[Dict[str, Any]]] = {}
+    rendered_parts: List[str] = []
+
+    for idx, term in enumerate(search_terms, start=1):
+        search_url = build_search_url(term)
+        print(f"\n[*] [{idx}/{len(search_terms)}] Querying MD Computers for: '{term}'", file=sys.stderr)
+        print(f"[*] Request URL: {search_url}", file=sys.stderr)
+
+        try:
+            html = fetch_html(search_url, timeout=timeout)
+            products = extract_products(html, limit=limit)
+        except requests.RequestException as e:
+            print(f"[!] Network error for '{term}': {e}", file=sys.stderr)
+            products = []
+
+        all_results[term] = products
+        print(f"[*] Extracted {len(products)} product(s) for '{term}'.", file=sys.stderr)
+
+        if output_format.lower() == "table":
+            header_banner = f"\n{'=' * 30} Results for: '{term}' ({len(products)} items) {'=' * 30}"
+            print(header_banner)
+            table_str = format_as_table(products)
+            print(table_str)
+            rendered_parts.append(f"{header_banner}\n{table_str}")
+
+    # Build combined output for JSON or CSV
+    rendered_output: str = ""
+    if output_format.lower() == "json":
+        combined_json = {
+            "search_queries": search_terms,
+            "total_queries": len(search_terms),
+            "results": {
+                term: {
+                    "total_extracted": len(prods),
+                    "source_url": build_search_url(term),
+                    "products": prods,
+                }
+                for term, prods in all_results.items()
+            },
+        }
+        rendered_output = json.dumps(combined_json, indent=2, ensure_ascii=False)
+        print(rendered_output)
+    elif output_format.lower() == "csv":
+        rendered_output = format_multi_csv(all_results)
+        print(rendered_output)
+    else:
+        rendered_output = "\n\n".join(rendered_parts)
+
+    # Save to file if specified
+    if output_file:
+        try:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(rendered_output)
+            print(f"\n[+] Combined output successfully saved to: {output_file}", file=sys.stderr)
+        except OSError as e:
+            print(f"[!] Failed to write output file: {e}", file=sys.stderr)
+
+    return all_results
+
+
+def parse_search_terms(raw_search: Optional[List[str]]) -> List[str]:
+    """Parse search terms from CLI args or interactive input.
+
+    Supports multiple space-separated arguments or comma-separated strings.
+    """
+    if raw_search:
+        # Check if single string with commas was passed (e.g. ['external harddrive, laptop'])
+        combined = " ".join(raw_search)
+        if "," in combined:
+            terms = [t.strip() for t in combined.split(",") if t.strip()]
+        else:
+            terms = [t.strip() for t in raw_search if t.strip()]
+        return terms
+
+    # Interactive prompt fallback
+    try:
+        user_input = input(
+            "Enter search term(s) (separate multiple queries with a comma, e.g., 'external harddrive, laptop'): "
+        ).strip()
+    except (KeyboardInterrupt, EOFError):
+        print("\nOperation cancelled by user.", file=sys.stderr)
+        sys.exit(0)
+
+    if not user_input:
+        print("[!] Error: Search term cannot be empty.", file=sys.stderr)
+        sys.exit(1)
+
+    terms = [t.strip() for t in user_input.split(",") if t.strip()]
+    return terms
+
+
 def main() -> None:
     """CLI entrypoint for MD Computers product scraper."""
     parser = argparse.ArgumentParser(
@@ -370,9 +524,9 @@ def main() -> None:
     )
     parser.add_argument(
         "-s", "--search",
-        type=str,
+        nargs="+",
         default=None,
-        help="Search keyword or product name (e.g., 'external harddrive'). If omitted, you will be prompted.",
+        help="One or more search keywords (e.g., -s 'external harddrive' 'laptop' or -s 'external harddrive, laptop').",
     )
     parser.add_argument(
         "-f", "--format",
@@ -391,7 +545,7 @@ def main() -> None:
         "-l", "--limit",
         type=int,
         default=None,
-        help="Optional maximum number of products to return.",
+        help="Optional maximum number of products to return per search term.",
     )
     parser.add_argument(
         "--timeout",
@@ -402,21 +556,10 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    # If search term was not provided as a CLI argument, ask interactively
-    search_term = args.search
-    if not search_term:
-        try:
-            search_term = input("Enter search term (e.g., 'external harddrive'): ").strip()
-        except (KeyboardInterrupt, EOFError):
-            print("\nOperation cancelled by user.", file=sys.stderr)
-            sys.exit(0)
+    search_terms = parse_search_terms(args.search)
 
-    if not search_term:
-        print("[!] Error: Search term cannot be empty.", file=sys.stderr)
-        sys.exit(1)
-
-    run_scraper(
-        search_term=search_term,
+    run_multi_scraper(
+        search_terms=search_terms,
         output_format=args.format,
         output_file=args.output,
         limit=args.limit,
